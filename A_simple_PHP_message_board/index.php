@@ -48,7 +48,6 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
         header {
             background: #333;
             color: #fff;
-            padding-top: 30px;
             min-height: 70px;
             border-bottom: #77aaff 3px solid;
         }
@@ -74,23 +73,22 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             margin-top: 20px;
         }
         h1, h2 {
-            text-align: center;
+            text-align: left;
         }
         form {
             margin-bottom: 20px;
         }
         label, textarea, input {
             display: block;
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 10px;
+            margin-bottom: 5px;
+            padding: 5px;
         }
         ul {
             list-style-type: none;
             padding: 0;
         }
         li {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -109,15 +107,15 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             background: #ffeeba;
             padding: 10px;
             border: 1px solid #ffeeba;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            border-radius: 0px;
+            margin-bottom: 2px;
         }
         .pinned-label {
             color: red;
             font-weight: bold;
         }
         .comment:nth-child(odd) {
-            background-color: #f9f9f9;
+            background-color: #cfcfcf;
         }
         .comment:nth-child(even) {
             background-color: #f1f1f1;
@@ -131,40 +129,45 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
         </div>
     </header>
     <div class="container main">
+        <div style="text-align: right;">
+            <button onclick="location.reload()">刷新</button>
+        </div>
+
         <?php if ($warning): ?>
             <p class="warning"><?php echo $warning; ?></p>
         <?php elseif ($success): ?>
             <p class="success">提交成功，请等待审核。</p>
         <?php endif; ?>
         <form method="POST" action="">
-            <label for="name">姓名:</label><br>
-            <input type="text" id="name" name="name" required><br>
-            <label for="content">内容:</label><br>
-            <textarea id="content" name="content" required></textarea><br>
-            <input type="submit" value="提交">
+            <label for="name">昵称:</label>
+            <input type="text" id="name" name="name" required style="width: 120px; height: 20px;">
+            <label for="content">内容:</label>
+            <textarea id="content" name="content" required style="width: 480px; height: 70px;"></textarea>
+            <input type="submit" value="提交" style="margin-top: 20px; margin-bottom: 50px; width: 100px; height: 35px;">
         </form>
-        <button onclick="location.reload()">刷新</button>
 
-        <h2>公告</h2>
+        <h2>站长公告</h2>
+        <hr style="width: 100%;">
         <?php foreach ($announcements as $announcement): ?>
             <div class="announcement">
                 <?php echo htmlspecialchars($announcement['content']); ?>
-                <em>(<?php echo $announcement['created_at']; ?>)</em>
+                <em>(<?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?>)</em>
             </div>
         <?php endforeach; ?>
 
         <h2>留言列表</h2>
+        <hr style="width: 100%;">
         <ul>
             <?php foreach ($comments as $index => $comment): ?>
                 <li class="comment">
                     <strong><?php echo htmlspecialchars($comment['name']); ?></strong>: 
                     <?php echo htmlspecialchars($comment['content']); ?>
-                    <em>(<?php echo $comment['created_at']; ?>)</em>
+                    <em>(<?php echo date("Y-m-d H:i:s", strtotime($comment['created_at']." +8 hours")); ?>)</em>
                     <?php if ($comment['is_pinned']): ?>
                         <span class="pinned-label">[置顶]</span>
                     <?php endif; ?>
                     <?php if (!empty($comment['reply'])): ?>
-                        <br><strong>管理员回复:</strong> <?php echo htmlspecialchars($comment['reply']); ?>
+                        <br>[站长回复]: <?php echo htmlspecialchars($comment['reply']); ?>
                     <?php endif; ?>
                 </li>
             <?php endforeach; ?>

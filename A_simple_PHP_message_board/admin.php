@@ -69,6 +69,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
 
 $groupedComments = [];
 foreach ($comments as $comment) {
+    $comment['created_at'] = date("Y-m-d H:i:s", strtotime($comment['created_at']." +8 hours"));
     $date = substr($comment['created_at'], 0, 10);
     if (!isset($groupedComments[$date])) {
         $groupedComments[$date] = [];
@@ -98,7 +99,6 @@ foreach ($comments as $comment) {
         header {
             background: #333;
             color: #fff;
-            padding-top: 30px;
             min-height: 70px;
             border-bottom: #77aaff 3px solid;
         }
@@ -124,23 +124,22 @@ foreach ($comments as $comment) {
             margin-top: 20px;
         }
         h1, h2 {
-            text-align: center;
+            text-align: left;
         }
         form {
-            margin-bottom: 20px;
+            margin-bottom: 0px;
         }
         label, textarea, input {
             display: block;
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 10px;
+            margin-bottom: 0px;
+            padding: 5px;
         }
         ul {
             list-style-type: none;
             padding: 0;
         }
         li {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -159,15 +158,15 @@ foreach ($comments as $comment) {
             background: #ffeeba;
             padding: 10px;
             border: 1px solid #ffeeba;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            border-radius: 0px;
+            margin-bottom: 2px;
         }
         .pinned-label {
             color: red;
             font-weight: bold;
         }
         .comment:nth-child(odd) {
-            background-color: #f9f9f9;
+            background-color: #cfcfcf;
         }
         .comment:nth-child(even) {
             background-color: #f1f1f1;
@@ -181,20 +180,21 @@ foreach ($comments as $comment) {
             border-radius: 3px;
         }
         .btn-approve {
-            background: #4CAF50;
+            background: #000000;
             color: #fff;
         }
         .btn-reply {
-            background: #008CBA;
+            background: #adadad;
             color: #fff;
         }
         .btn-pin, .btn-unpin {
-            background: #ff9800;
+            background: #adadad;
             color: #fff;
         }
         .btn-delete, .btn-delete-announcement {
-            background: #f44336;
+            background: #adadad;
             color: #fff;
+            text-decoration:none;
         }
     </style>
 </head>
@@ -212,27 +212,31 @@ foreach ($comments as $comment) {
                 <input type="submit" value="登录">
             </form>
         <?php else: ?>
-            <button onclick="location.reload()">刷新</button>
+            <div style="text-align: right;">
+                <button onclick="location.reload()">刷新</button>
+            </div>
             <h2>添加公告</h2>
             <form method="POST" action="">
-                <label for="announcement">公告内容:</label>
-                <textarea id="announcement" name="announcement" required></textarea>
-                <input type="submit" name="add_announcement" value="添加公告">
+                <label for="announcement"></label>
+                <textarea id="announcement" name="announcement" required style="width: 480px; height: 70px;"></textarea>
+                <input type="submit" name="add_announcement" value="添加公告" style="margin-top: 20px; margin-bottom: 50px; width: 100px; height: 35px;">
             </form>
 
-            <h2>公告列表</h2>
+            <h2>管理公告</h2>
+            <hr style="width: 100%;">
             <?php foreach ($announcements as $announcement): ?>
                 <div class="announcement">
                     <?php echo htmlspecialchars($announcement['content']); ?>
-                    <em>(<?php echo $announcement['created_at']; ?>)</em>
+                    <em>(<?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?>)</em>
                     <form method="POST" action="" style="display:inline;">
                         <input type="hidden" name="id" value="<?php echo $announcement['id']; ?>">
-                        <input type="submit" name="delete_announcement" value="删除公告" class="btn btn-delete-announcement">
+                        <input type="submit" name="delete_announcement" value="删除公告" class="btn btn-delete-announcement" style="background: #000000;">
                     </form>
                 </div>
             <?php endforeach; ?>
 
-            <h2>留言列表</h2>
+            <h2>管理留言</h2>
+            <hr style="width: 100%;">
             <?php foreach ($groupedComments as $date => $comments): ?>
                 <div class="comment-date"><?php echo $date; ?></div>
                 <ul>
@@ -247,16 +251,16 @@ foreach ($comments as $comment) {
                             <?php if ($comment['is_approved'] == 0): ?>
                                 <form method="POST" action="" style="display:inline;">
                                     <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
-                                    <input type="submit" name="approve" value="审核通过" class="btn btn-approve">
+                                    <input type="submit" name="approve" value="审核中…" class="btn btn-approve">
                                 </form>
                             <?php endif; ?>
                             <?php if (!empty($comment['reply'])): ?>
-                                <br><strong>管理员回复:</strong> <?php echo htmlspecialchars($comment['reply']); ?>
+                                <br>[站长回复]: <?php echo htmlspecialchars($comment['reply']); ?>
                             <?php else: ?>
                                 <form method="POST" action="">
                                     <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
-                                    <label for="reply">回复:</label>
-                                    <textarea name="reply" required></textarea>
+                                    <label for="reply"></label>
+                                    <textarea name="reply" required style="width: 480px; height: 70px;"></textarea>
                                     <input type="submit" value="回复" class="btn btn-reply">
                                 </form>
                             <?php endif; ?>
