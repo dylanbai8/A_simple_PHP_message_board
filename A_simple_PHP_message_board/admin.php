@@ -4,6 +4,10 @@ require 'config.php';
 
 $isLoggedIn = isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'];
 
+// 获取当前页码
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$page = max($page, 1); // 页码不能小于1
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['password']) && $_POST['password'] === $adminPassword) {
         $_SESSION['is_logged_in'] = true;
@@ -13,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $db = getDb();
         $stmt = $db->prepare("UPDATE comments SET is_approved = 1 WHERE id = :id");
         $stmt->execute([':id' => $id]);
-        header('Location: admin.php');
+        header('Location: admin.php?page='.$page);
         exit;
     } elseif (isset($_POST['reply'])) {
         $id = (int)$_POST['id'];
@@ -21,42 +25,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $db = getDb();
         $stmt = $db->prepare("UPDATE comments SET reply = :reply WHERE id = :id");
         $stmt->execute([':reply' => $reply, ':id' => $id]);
-        header('Location: admin.php');
+        header('Location: admin.php?page='.$page);
         exit;
     } elseif (isset($_POST['pin'])) {
         $id = (int)$_POST['id'];
         $db = getDb();
         $stmt = $db->prepare("UPDATE comments SET is_pinned = 1 WHERE id = :id");
         $stmt->execute([':id' => $id]);
-        header('Location: admin.php');
+        header('Location: admin.php?page='.$page);
         exit;
     } elseif (isset($_POST['unpin'])) {
         $id = (int)$_POST['id'];
         $db = getDb();
         $stmt = $db->prepare("UPDATE comments SET is_pinned = 0 WHERE id = :id");
         $stmt->execute([':id' => $id]);
-        header('Location: admin.php');
+        header('Location: admin.php?page='.$page);
         exit;
     } elseif (isset($_POST['add_announcement'])) {
         $content = $_POST['announcement'];
         $db = getDb();
         $stmt = $db->prepare("INSERT INTO announcements (content) VALUES (:content)");
         $stmt->execute([':content' => $content]);
-        header('Location: admin.php');
+        header('Location: admin.php?page='.$page);
         exit;
     } elseif (isset($_POST['delete_announcement'])) {
         $id = (int)$_POST['id'];
         $db = getDb();
         $stmt = $db->prepare("DELETE FROM announcements WHERE id = :id");
         $stmt->execute([':id' => $id]);
-        header('Location: admin.php');
+        header('Location: admin.php?page='.$page);
         exit;
     }
 }
-
-// 获取当前页码
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$page = max($page, 1); // 页码不能小于1
 
 // 计算偏移量
 $offset = ($page - 1) * $perPage;
@@ -181,7 +181,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
 <body>
     <header>
         <div class="container">
-            <h3>留言板-管理后台</h3>
+            <h3><a href="./admin.php" style="text-decoration: none; color: #fff;">留言板-管理后台</a></h3>
         </div>
     </header>
     <div class="container main">
@@ -212,8 +212,8 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                 <input type="submit" name="add_announcement" value="发布公告" class="btn" style="background: #e2e2e2;">
             </form>
             </li></ul>
-
-            <h3>留言管理</h3>
+            <h3 style="display: inline;">留言管理</h3>
+            <span style="float:right;">[第<?php echo $page; ?>页] <a class="btn btn-delete" onclick="location.reload()">刷新</a></span>
             <hr style="width: 100%;">
             <ul>
                 <?php foreach ($comments as $comment): ?>
@@ -241,7 +241,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                                     <input type="submit" name="pin" value="置顶" class="btn btn-pin">
                                 </form>
                             <?php endif; ?>
-                            <a href="?delete=<?php echo $comment['id']; ?>" class="btn btn-delete" style="height: 20px; padding-top: 3px;">删除</a>
+                            <a href="?page=<?php echo $page; ?>&delete=<?php echo $comment['id']; ?>" class="btn btn-delete" style="height: 20px; padding-top: 3px;">删除</a>
                         </div>
                             <form method="POST" action="">
                                 <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
