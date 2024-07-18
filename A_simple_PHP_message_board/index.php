@@ -4,14 +4,13 @@ require 'config.php';
 
 $warning = '';
 $success = false;
-$perPage = 20; // 每页显示的留言数量
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name']) && isset($_POST['content'])) {
     $name = $_POST['name'];
     $content = $_POST['content'];
     $lastPosted = isset($_SESSION['last_posted']) ? $_SESSION['last_posted'] : null;
 
-    if ($lastPosted && (time() - $lastPosted) < 300) {
+    if ($lastPosted && (time() - $lastPosted) < $breakTime) {
         $warning = '请等待5分钟后再留言。';
     } else {
         if (!empty($name) && !empty($content)) {
@@ -20,6 +19,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute([':name' => $name, ':content' => $content]);
             $_SESSION['last_posted'] = time();
             $success = true;
+            // 防止重复提交，重定向到同一页面
+            header('Location: index.php');
+            exit;
         }
     }
 }
@@ -45,7 +47,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>留言板</title>
+    <title>留言板-建议和反馈</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -62,23 +64,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
         header {
             background: #333;
             color: #fff;
-            min-height: 70px;
-            border-bottom: #77aaff 3px solid;
-        }
-        header a {
-            color: #fff;
-            text-decoration: none;
-            text-transform: uppercase;
-            font-size: 16px;
-        }
-        header ul {
-            padding: 0;
-            list-style: none;
-        }
-        header li {
-            float: left;
-            display: inline;
-            padding: 0 20px 0 20px;
+            height: 66px;
         }
         .main {
             padding: 15px;
@@ -122,45 +108,68 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             padding: 10px;
             border: 1px solid #ffeeba;
             border-radius: 0px;
-            margin-bottom: 2px;
+            margin-bottom: 60px;
         }
         .pinned-label {
             color: red;
             font-weight: bold;
         }
         .comment:nth-child(odd) {
-            background-color: #cfcfcf;
+            background-color: #f1f1f1;
         }
         .comment:nth-child(even) {
-            background-color: #f1f1f1;
+            background-color: #ffffff;
+        }
+        .btn {
+            padding: 5px 10px;
+            margin: 2px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            border-radius: 3px;
+            height: 28px;
+        }
+        .btn-delete, .btn-delete-announcement {
+            background: #adadad;
+            color: #fff;
+            text-decoration:none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>留言板</h1>
-        <!-- 留言表单省略 -->
+    <header>
+        <div class="container">
+            <h3><a href="./index.php" style="text-decoration: none; color: #fff;">留言板 --建议和反馈</a></h3>
+        </div>
+    </header>
+    <div class="container main">
+        <?php if ($warning): ?>
+            <p class="warning"><?php echo $warning; ?></p>
+        <?php elseif ($success): ?>
+            <p class="success">提交成功，请等待审核。</p>
+        <?php endif; ?>
 
-        <h2>站长公告</h2>
+        <h3>站长公告</h3>
         <hr style="width: 100%;">
         <?php foreach ($announcements as $announcement): ?>
             <div class="announcement">
                 <?php echo htmlspecialchars($announcement['content']); ?>
-                <em>(<?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?>)</em>
+                <em style="color: #969696;">(<?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?>)</em>
             </div>
         <?php endforeach; ?>
 
-        <h2>留言列表</h2>
+        <h3 style="display: inline;">留言精选</h3>
+        <span style="float:right;">[第<?php echo $page; ?>页] <a class="btn btn-delete" onclick="location.reload()">刷新</a></span>
         <hr style="width: 100%;">
         <ul>
             <?php foreach ($comments as $comment): ?>
                 <li class="comment">
-                    <strong><?php echo htmlspecialchars($comment['name']); ?></strong>:
-                    <?php echo htmlspecialchars($comment['content']); ?>
-                    <em>(<?php echo date("Y-m-d H:i:s", strtotime($comment['created_at']." +8 hours")); ?>)</em>
+                    <strong>[访客]: <?php echo htmlspecialchars($comment['name']); ?></strong>
+                    <em style="color: #969696;"><?php echo date("Y-m-d H:i:s", strtotime($comment['created_at']." +8 hours")); ?></em>
                     <?php if ($comment['is_pinned']): ?>
                         <span class="pinned-label">[置顶]</span>
                     <?php endif; ?>
+                    <br>[留言]: <?php echo htmlspecialchars($comment['content']); ?>
                     <?php if (!empty($comment['reply'])): ?>
                         <br>[站长回复]: <?php echo htmlspecialchars($comment['reply']); ?>
                     <?php endif; ?>
@@ -168,20 +177,28 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             <?php endforeach; ?>
         </ul>
 
-        <div class="pagination">
-            <?php if ($page > 1): ?>
-                <a href="?page=<?php echo $page - 1; ?>">上一页</a>
-            <?php endif; ?>
-            <?php if ($page < $totalPages): ?>
-                <a href="?page=<?php echo $page + 1; ?>">下一页</a>
-            <?php endif; ?>
-        </div>
+            <div style="text-align: center; margin-bottom: 45px; margin-top: 30px;">
 
-        <?php if ($warning): ?>
-            <p class="warning"><?php echo $warning; ?></p>
-        <?php elseif ($success): ?>
-            <p class="success">提交成功，请等待审核。</p>
-        <?php endif; ?>
+                <?php if ($page == 1): ?>
+                    <a class="btn btn-delete">上一页</a> 
+                <?php endif; ?>
+
+                <?php if ($page > 1): ?>
+                    <a class="btn btn-delete" href="?page=<?php echo $page - 1; ?>">上一页</a> 
+                <?php endif; ?>
+
+                    <a class="btn btn-delete" href="?page=<?php echo $page; ?>">第<?php echo $page; ?>页</a> 
+
+                <?php if ($page < $totalPages): ?>
+                    <a class="btn btn-delete" href="?page=<?php echo $page + 1; ?>">下一页</a>
+                <?php endif; ?>
+
+                <?php if ($page == $totalPages): ?>
+                    <a class="btn btn-delete">下一页</a>
+                <?php endif; ?>
+
+            </div>
+
         <form method="POST" action="">
             <label for="name">昵称:</label>
             <input type="text" id="name" name="name" required style="width: 120px; height: 20px;">

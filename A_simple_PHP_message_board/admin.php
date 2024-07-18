@@ -274,7 +274,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                 <?php endif; ?>
 
             </div>
-        <?php endif; ?>
+
     </div>
 </body>
 </html>
