@@ -212,7 +212,8 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                 <input type="submit" name="add_announcement" value="发布公告" class="btn" style="background: #e2e2e2;">
             </form>
             </li></ul>
-            <h3 style="display: inline;">留言管理</h3>
+            <div style="margin-bottom: 38px;"></div>
+            <h3 style="display: inline;">留言管理</h3> [<?php echo $perPage.'条/'.$totalComments.'条'; ?>]
             <span style="float:right;">[第<?php echo $page; ?>页] <a class="btn btn-delete" onclick="location.reload()">刷新</a></span>
             <hr style="width: 100%;">
             <ul>
@@ -233,7 +234,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                             <?php if ($comment['is_pinned']): ?>
                                 <form method="POST" action="" style="display:inline;">
                                     <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
-                                    <input type="submit" name="unpin" value="取消置顶" class="btn btn-unpin">
+                                    <input type="submit" name="unpin" value="取消置顶" class="btn btn-unpin" style="background: #000000;">
                                 </form>
                             <?php else: ?>
                                 <form method="POST" action="" style="display:inline;">
@@ -275,6 +276,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
 
             </div>
 
+        <?php endif; ?>
     </div>
 </body>
 </html>

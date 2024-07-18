@@ -1,6 +1,6 @@
 <?php
 $adminPassword = 'admin123'; // 设置管理员密码
-$breakTime = '0'; // 秒 重复留言间隔时间
+$breakTime = '60'; // 秒 重复留言间隔时间
 $perPage = 3; // 每页显示的留言数量
 
 function getDb() {

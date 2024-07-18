@@ -3,7 +3,7 @@ session_start();
 require 'config.php';
 
 $warning = '';
-$success = false;
+$success = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name']) && isset($_POST['content'])) {
     $name = $_POST['name'];
@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name']) && isset($_POS
     $lastPosted = isset($_SESSION['last_posted']) ? $_SESSION['last_posted'] : null;
 
     if ($lastPosted && (time() - $lastPosted) < $breakTime) {
-        $warning = '请等待5分钟后再留言。';
+        $warning = '请等待'.($breakTime/60).'分钟后再留言。';
     } else {
         if (!empty($name) && !empty($content)) {
             $db = getDb();
