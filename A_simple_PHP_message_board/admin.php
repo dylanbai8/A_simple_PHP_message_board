@@ -95,23 +95,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
         header {
             background: #333;
             color: #fff;
-            min-height: 70px;
-            border-bottom: #77aaff 3px solid;
-        }
-        header a {
-            color: #fff;
-            text-decoration: none;
-            text-transform: uppercase;
-            font-size: 16px;
-        }
-        header ul {
-            padding: 0;
-            list-style: none;
-        }
-        header li {
-            float: left;
-            display: inline;
-            padding: 0 20px 0 20px;
+            height: 66px;
         }
         .main {
             padding: 15px;
@@ -174,6 +158,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             cursor: pointer;
             font-size: 0.9em;
             border-radius: 3px;
+            height: 28px;
         }
         .btn-approve {
             background: #000000;
@@ -199,9 +184,12 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>管理员界面</h1>
-
+    <header>
+        <div class="container">
+            <h3>管理员界面</h3>
+        </div>
+    </header>
+    <div class="container main">
         <?php if (!$isLoggedIn): ?>
             <form method="POST" action="">
                 <label for="password">管理员密码:</label>
@@ -215,7 +203,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                 <?php foreach ($announcements as $announcement): ?>
                     <li>
                         <?php echo htmlspecialchars($announcement['content']); ?>
-                        <em>(<?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?>)</em>
+                        <em style="color: #969696;">(<?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?>)</em>
                         <form method="POST" action="" style="display:inline;">
                             <input type="hidden" name="id" value="<?php echo $announcement['id']; ?>">
                             <input type="submit" name="delete_announcement" value="删除" class="btn btn-delete-announcement">
@@ -235,7 +223,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                     <li>
                         <strong><?php echo htmlspecialchars($comment['name']); ?></strong>:
                         <?php echo htmlspecialchars($comment['content']); ?>
-                        <em>(<?php echo date("Y-m-d H:i:s", strtotime($comment['created_at']." +8 hours")); ?>)</em>
+                        <em style="color: #969696;">(<?php echo date("Y-m-d H:i:s", strtotime($comment['created_at']." +8 hours")); ?>)</em>
                         <div class="action-buttons">
                             <?php if (!$comment['is_approved']): ?>
                                 <form method="POST" action="">
@@ -243,12 +231,6 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                                     <input type="submit" name="approve" value="审核" class="btn btn-approve">
                                 </form>
                             <?php endif; ?>
-                            <form method="POST" action="">
-                                <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
-                                <label for="reply"></label>
-                                <textarea name="reply" required style="width: 480px; height: 70px;"></textarea>
-                                <input type="submit" value="回复" class="btn btn-reply">
-                            </form>
                             <?php if ($comment['is_pinned']): ?>
                                 <form method="POST" action="" style="display:inline;">
                                     <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
@@ -260,8 +242,14 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                                     <input type="submit" name="pin" value="置顶" class="btn btn-pin">
                                 </form>
                             <?php endif; ?>
-                            <a href="?delete=<?php echo $comment['id']; ?>" class="btn btn-delete">删除</a>
+                            <a href="?delete=<?php echo $comment['id']; ?>" class="btn btn-delete" style="height: 20px; padding-top: 3px;">删除</a>
                         </div>
+                            <form method="POST" action="">
+                                <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
+                                <label for="reply" style="display: none;"></label>
+                                <textarea name="reply" required style="width: 480px; height: 70px;"></textarea>
+                                <input type="submit" value="回复" class="btn btn-reply">
+                            </form>
                     </li>
                 <?php endforeach; ?>
             </ul>
