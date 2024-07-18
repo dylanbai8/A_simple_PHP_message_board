@@ -4,6 +4,7 @@ require 'config.php';
 
 $warning = '';
 $success = false;
+$perPage = 20; // 每页显示的留言数量
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['name'];
@@ -23,7 +24,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-$comments = getDb()->query("SELECT * FROM comments WHERE is_approved = 1 ORDER BY is_pinned DESC, created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+// 获取当前页码
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$page = max($page, 1); // 页码不能小于1
+
+// 计算偏移量
+$offset = ($page - 1) * $perPage;
+
+// 从数据库中获取留言
+$comments = getDb()->query("SELECT * FROM comments WHERE is_approved = 1 ORDER BY is_pinned DESC, created_at DESC LIMIT $perPage OFFSET $offset")->fetchAll(PDO::FETCH_ASSOC);
+
+// 获取总留言数
+$totalComments = getDb()->query("SELECT COUNT(*) FROM comments WHERE is_approved = 1")->fetchColumn();
+$totalPages = ceil($totalComments / $perPage);
+
 $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -123,14 +137,44 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>留言板</h1>
-        </div>
-    </header>
-    <div class="container main">
-        <div style="text-align: right;">
-            <button onclick="location.reload()">刷新</button>
+    <div class="container">
+        <h1>留言板</h1>
+        <!-- 留言表单省略 -->
+
+        <h2>站长公告</h2>
+        <hr style="width: 100%;">
+        <?php foreach ($announcements as $announcement): ?>
+            <div class="announcement">
+                <?php echo htmlspecialchars($announcement['content']); ?>
+                <em>(<?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?>)</em>
+            </div>
+        <?php endforeach; ?>
+
+        <h2>留言列表</h2>
+        <hr style="width: 100%;">
+        <ul>
+            <?php foreach ($comments as $comment): ?>
+                <li class="comment">
+                    <strong><?php echo htmlspecialchars($comment['name']); ?></strong>:
+                    <?php echo htmlspecialchars($comment['content']); ?>
+                    <em>(<?php echo date("Y-m-d H:i:s", strtotime($comment['created_at']." +8 hours")); ?>)</em>
+                    <?php if ($comment['is_pinned']): ?>
+                        <span class="pinned-label">[置顶]</span>
+                    <?php endif; ?>
+                    <?php if (!empty($comment['reply'])): ?>
+                        <br>[站长回复]: <?php echo htmlspecialchars($comment['reply']); ?>
+                    <?php endif; ?>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+
+        <div class="pagination">
+            <?php if ($page > 1): ?>
+                <a href="?page=<?php echo $page - 1; ?>">上一页</a>
+            <?php endif; ?>
+            <?php if ($page < $totalPages): ?>
+                <a href="?page=<?php echo $page + 1; ?>">下一页</a>
+            <?php endif; ?>
         </div>
 
         <?php if ($warning): ?>
@@ -145,33 +189,6 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             <textarea id="content" name="content" required style="width: 480px; height: 70px;"></textarea>
             <input type="submit" value="提交" style="margin-top: 20px; margin-bottom: 50px; width: 100px; height: 35px;">
         </form>
-
-        <h2>站长公告</h2>
-        <hr style="width: 100%;">
-        <?php foreach ($announcements as $announcement): ?>
-            <div class="announcement">
-                <?php echo htmlspecialchars($announcement['content']); ?>
-                <em>(<?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?>)</em>
-            </div>
-        <?php endforeach; ?>
-
-        <h2>留言列表</h2>
-        <hr style="width: 100%;">
-        <ul>
-            <?php foreach ($comments as $index => $comment): ?>
-                <li class="comment">
-                    <strong><?php echo htmlspecialchars($comment['name']); ?></strong>: 
-                    <?php echo htmlspecialchars($comment['content']); ?>
-                    <em>(<?php echo date("Y-m-d H:i:s", strtotime($comment['created_at']." +8 hours")); ?>)</em>
-                    <?php if ($comment['is_pinned']): ?>
-                        <span class="pinned-label">[置顶]</span>
-                    <?php endif; ?>
-                    <?php if (!empty($comment['reply'])): ?>
-                        <br>[站长回复]: <?php echo htmlspecialchars($comment['reply']); ?>
-                    <?php endif; ?>
-                </li>
-            <?php endforeach; ?>
-        </ul>
     </div>
 </body>
 </html>

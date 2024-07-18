@@ -4,6 +4,7 @@ require 'config.php';
 
 $adminPassword = 'admin123'; // 设置管理员密码
 $isLoggedIn = isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'];
+$perPage = 20; // 每页显示的留言数量
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['password']) && $_POST['password'] === $adminPassword) {
@@ -55,34 +56,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-if (isset($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
-    $db = getDb();
-    $stmt = $db->prepare("DELETE FROM comments WHERE id = :id");
-    $stmt->execute([':id' => $id]);
-    header('Location: admin.php');
-    exit;
-}
+// 获取当前页码
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$page = max($page, 1); // 页码不能小于1
 
-$comments = getDb()->query("SELECT * FROM comments ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+// 计算偏移量
+$offset = ($page - 1) * $perPage;
+
+// 从数据库中获取留言
+$comments = getDb()->query("SELECT * FROM comments ORDER BY is_pinned DESC, created_at DESC LIMIT $perPage OFFSET $offset")->fetchAll(PDO::FETCH_ASSOC);
+
+// 获取总留言数
+$totalComments = getDb()->query("SELECT COUNT(*) FROM comments")->fetchColumn();
+$totalPages = ceil($totalComments / $perPage);
+
+// 从数据库中获取公告
 $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-
-$groupedComments = [];
-foreach ($comments as $comment) {
-    $comment['created_at'] = date("Y-m-d H:i:s", strtotime($comment['created_at']." +8 hours"));
-    $date = substr($comment['created_at'], 0, 10);
-    if (!isset($groupedComments[$date])) {
-        $groupedComments[$date] = [];
-    }
-    $groupedComments[$date][] = $comment;
-}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>管理后台</title>
+    <title>管理员界面</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -196,74 +192,63 @@ foreach ($comments as $comment) {
             color: #fff;
             text-decoration:none;
         }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>管理后台</h1>
-        </div>
-    </header>
-    <div class="container main">
+    <div class="container">
+        <h1>管理员界面</h1>
+
         <?php if (!$isLoggedIn): ?>
             <form method="POST" action="">
-                <label for="password">密码:</label><br>
-                <input type="password" id="password" name="password" required><br>
+                <label for="password">管理员密码:</label>
+                <input type="password" id="password" name="password" required>
                 <input type="submit" value="登录">
             </form>
         <?php else: ?>
-            <div style="text-align: right;">
-                <button onclick="location.reload()">刷新</button>
-            </div>
-            <h2>添加公告</h2>
+            <h2>公告</h2>
+            <hr style="width: 100%;">
+            <ul>
+                <?php foreach ($announcements as $announcement): ?>
+                    <li>
+                        <?php echo htmlspecialchars($announcement['content']); ?>
+                        <em>(<?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?>)</em>
+                        <form method="POST" action="" style="display:inline;">
+                            <input type="hidden" name="id" value="<?php echo $announcement['id']; ?>">
+                            <input type="submit" name="delete_announcement" value="删除" class="btn btn-delete-announcement">
+                        </form>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
             <form method="POST" action="">
-                <label for="announcement"></label>
-                <textarea id="announcement" name="announcement" required style="width: 480px; height: 70px;"></textarea>
-                <input type="submit" name="add_announcement" value="添加公告" style="margin-top: 20px; margin-bottom: 50px; width: 100px; height: 35px;">
+                <textarea name="announcement" required style="width: 480px; height: 70px;"></textarea>
+                <input type="submit" name="add_announcement" value="添加公告" class="btn btn-add-announcement">
             </form>
 
-            <h2>管理公告</h2>
+            <h2>留言管理</h2>
             <hr style="width: 100%;">
-            <?php foreach ($announcements as $announcement): ?>
-                <div class="announcement">
-                    <?php echo htmlspecialchars($announcement['content']); ?>
-                    <em>(<?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?>)</em>
-                    <form method="POST" action="" style="display:inline;">
-                        <input type="hidden" name="id" value="<?php echo $announcement['id']; ?>">
-                        <input type="submit" name="delete_announcement" value="删除公告" class="btn btn-delete-announcement" style="background: #000000;">
-                    </form>
-                </div>
-            <?php endforeach; ?>
-
-            <h2>管理留言</h2>
-            <hr style="width: 100%;">
-            <?php foreach ($groupedComments as $date => $comments): ?>
-                <div class="comment-date"><?php echo $date; ?></div>
-                <ul>
-                    <?php foreach ($comments as $index => $comment): ?>
-                        <li class="comment">
-                            <strong><?php echo htmlspecialchars($comment['name']); ?></strong>: 
-                            <?php echo htmlspecialchars($comment['content']); ?>
-                            <em>(<?php echo $comment['created_at']; ?>)</em>
-                            <?php if ($comment['is_pinned']): ?>
-                                <span class="pinned-label">[置顶]</span>
-                            <?php endif; ?>
-                            <?php if ($comment['is_approved'] == 0): ?>
-                                <form method="POST" action="" style="display:inline;">
-                                    <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
-                                    <input type="submit" name="approve" value="审核中…" class="btn btn-approve">
-                                </form>
-                            <?php endif; ?>
-                            <?php if (!empty($comment['reply'])): ?>
-                                <br>[站长回复]: <?php echo htmlspecialchars($comment['reply']); ?>
-                            <?php else: ?>
+            <ul>
+                <?php foreach ($comments as $comment): ?>
+                    <li>
+                        <strong><?php echo htmlspecialchars($comment['name']); ?></strong>:
+                        <?php echo htmlspecialchars($comment['content']); ?>
+                        <em>(<?php echo date("Y-m-d H:i:s", strtotime($comment['created_at']." +8 hours")); ?>)</em>
+                        <div class="action-buttons">
+                            <?php if (!$comment['is_approved']): ?>
                                 <form method="POST" action="">
                                     <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
-                                    <label for="reply"></label>
-                                    <textarea name="reply" required style="width: 480px; height: 70px;"></textarea>
-                                    <input type="submit" value="回复" class="btn btn-reply">
+                                    <input type="submit" name="approve" value="审核" class="btn btn-approve">
                                 </form>
                             <?php endif; ?>
+                            <form method="POST" action="">
+                                <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
+                                <label for="reply"></label>
+                                <textarea name="reply" required style="width: 480px; height: 70px;"></textarea>
+                                <input type="submit" value="回复" class="btn btn-reply">
+                            </form>
                             <?php if ($comment['is_pinned']): ?>
                                 <form method="POST" action="" style="display:inline;">
                                     <input type="hidden" name="id" value="<?php echo $comment['id']; ?>">
@@ -276,10 +261,19 @@ foreach ($comments as $comment) {
                                 </form>
                             <?php endif; ?>
                             <a href="?delete=<?php echo $comment['id']; ?>" class="btn btn-delete">删除</a>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            <?php endforeach; ?>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+
+            <div class="pagination">
+                <?php if ($page > 1): ?>
+                    <a href="?page=<?php echo $page - 1; ?>">上一页</a>
+                <?php endif; ?>
+                <?php if ($page < $totalPages): ?>
+                    <a href="?page=<?php echo $page + 1; ?>">下一页</a>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
     </div>
 </body>
