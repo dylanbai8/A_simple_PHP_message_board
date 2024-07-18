@@ -1,4 +1,7 @@
 <?php
+$adminPassword = 'admin123'; // 设置管理员密码
+$perPage = 3; // 每页显示的留言数量
+
 function getDb() {
     $db = new PDO('sqlite:messages.db');
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

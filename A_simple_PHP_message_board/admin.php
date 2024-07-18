@@ -2,9 +2,7 @@
 session_start();
 require 'config.php';
 
-$adminPassword = 'admin123'; // 设置管理员密码
 $isLoggedIn = isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'];
-$perPage = 20; // 每页显示的留言数量
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['password']) && $_POST['password'] === $adminPassword) {
@@ -78,7 +76,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>管理员界面</title>
+    <title>留言板-管理后台</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -102,9 +100,6 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             background: #fff;
             border-radius: 5px;
             margin-top: 20px;
-        }
-        h1, h2 {
-            text-align: left;
         }
         form {
             margin-bottom: 0px;
@@ -186,7 +181,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
 <body>
     <header>
         <div class="container">
-            <h3>管理员界面</h3>
+            <h3>留言板-管理后台</h3>
         </div>
     </header>
     <div class="container main">
@@ -197,7 +192,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                 <input type="submit" value="登录">
             </form>
         <?php else: ?>
-            <h2>公告</h2>
+            <h3>公告管理</h3>
             <hr style="width: 100%;">
             <ul>
                 <?php foreach ($announcements as $announcement): ?>
@@ -211,12 +206,14 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                     </li>
                 <?php endforeach; ?>
             </ul>
+            <ul><li>
             <form method="POST" action="">
                 <textarea name="announcement" required style="width: 480px; height: 70px;"></textarea>
-                <input type="submit" name="add_announcement" value="添加公告" class="btn btn-add-announcement">
+                <input type="submit" name="add_announcement" value="发布公告" class="btn" style="background: #e2e2e2;">
             </form>
+            </li></ul>
 
-            <h2>留言管理</h2>
+            <h3>留言管理</h3>
             <hr style="width: 100%;">
             <ul>
                 <?php foreach ($comments as $comment): ?>
@@ -224,6 +221,8 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                         <strong><?php echo htmlspecialchars($comment['name']); ?></strong>:
                         <?php echo htmlspecialchars($comment['content']); ?>
                         <em style="color: #969696;">(<?php echo date("Y-m-d H:i:s", strtotime($comment['created_at']." +8 hours")); ?>)</em>
+                        <?php if (!empty($comment['reply'])) {echo "<br>[站长回复]: ".htmlspecialchars($comment['reply']);} ?>
+
                         <div class="action-buttons">
                             <?php if (!$comment['is_approved']): ?>
                                 <form method="POST" action="">
@@ -254,13 +253,26 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                 <?php endforeach; ?>
             </ul>
 
-            <div class="pagination">
+            <div style="text-align: center;">
+
+                <?php if ($page == 1): ?>
+                    <a class="btn btn-delete">上一页</a> 
+                <?php endif; ?>
+
                 <?php if ($page > 1): ?>
-                    <a href="?page=<?php echo $page - 1; ?>">上一页</a>
+                    <a class="btn btn-delete" href="?page=<?php echo $page - 1; ?>">上一页</a> 
                 <?php endif; ?>
+
+                    <a class="btn btn-delete" href="?page=<?php echo $page; ?>">第<?php echo $page; ?>页</a> 
+
                 <?php if ($page < $totalPages): ?>
-                    <a href="?page=<?php echo $page + 1; ?>">下一页</a>
+                    <a class="btn btn-delete" href="?page=<?php echo $page + 1; ?>">下一页</a>
                 <?php endif; ?>
+
+                <?php if ($page == $totalPages): ?>
+                    <a class="btn btn-delete">下一页</a>
+                <?php endif; ?>
+
             </div>
         <?php endif; ?>
     </div>
