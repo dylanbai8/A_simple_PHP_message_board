@@ -3,7 +3,7 @@ session_start();
 require 'config.php';
 
 $warning = '';
-$success = '';
+$success = false;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name']) && isset($_POST['content'])) {
     $name = $_POST['name'];
@@ -19,9 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name']) && isset($_POS
             $stmt->execute([':name' => $name, ':content' => $content]);
             $_SESSION['last_posted'] = time();
             $success = true;
-            // 防止重复提交，重定向到同一页面
-            header('Location: index.php');
-            exit;
         }
     }
 }
@@ -147,6 +144,20 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             <p class="warning"><?php echo $warning; ?></p>
         <?php elseif ($success): ?>
             <p class="success">提交成功，请等待审核。</p>
+
+            <p class="success">将于 <span id="countdown">8</span> 秒后刷新。</p>
+            <script>
+                var countdownElement = document.getElementById("countdown");
+                var countdown = 8;
+                var interval = setInterval(function() {
+                    countdown--;
+                    countdownElement.textContent = countdown;
+                    if (countdown <= 0) {
+                        clearInterval(interval);
+                        window.location.href = "index.php";
+                    }
+                }, 1000);
+            </script>
         <?php endif; ?>
 
         <h3>站长公告</h3>
