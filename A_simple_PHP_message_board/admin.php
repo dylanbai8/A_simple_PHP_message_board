@@ -85,6 +85,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>留言板-管理后台</title>
     <style>
         body {
@@ -129,31 +130,12 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             border-radius: 5px;
             background: #fff;
         }
-        .warning {
-            color: red;
-            text-align: center;
-        }
-        .comment-date {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-top: 20px;
-        }
         .announcement {
             background: #ffeeba;
             padding: 10px;
             border: 1px solid #ffeeba;
             border-radius: 0px;
             margin-bottom: 2px;
-        }
-        .pinned-label {
-            color: red;
-            font-weight: bold;
-        }
-        .comment:nth-child(odd) {
-            background-color: #cfcfcf;
-        }
-        .comment:nth-child(even) {
-            background-color: #f1f1f1;
         }
         .btn {
             padding: 5px 10px;
@@ -183,7 +165,18 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
         }
         .action-buttons {
             display: flex;
-            gap: 10px;
+            gap: 5px;
+        }
+        textarea {
+            max-width: 100%;
+            width: 100%;
+            height: 70px;
+            box-sizing: border-box;
+        }
+        @media (min-width: 600px) {
+            textarea {
+                width: 480px;
+            }
         }
     </style>
 </head>
@@ -219,7 +212,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             </ul>
             <ul><li>
             <form method="POST" action="">
-                <textarea name="announcement" required style="width: 480px; height: 70px;"></textarea>
+                <textarea name="announcement" required></textarea>
                 <input type="submit" name="add_announcement" value="发布公告" class="btn" style="background: #e2e2e2;">
             </form>
             </li></ul>

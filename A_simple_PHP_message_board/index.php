@@ -44,6 +44,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>留言板-建议和反馈</title>
     <style>
         body {
@@ -68,9 +69,6 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             background: #fff;
             border-radius: 5px;
             margin-top: 20px;
-        }
-        h1, h2 {
-            text-align: left;
         }
         form {
             margin-bottom: 20px;
@@ -130,6 +128,17 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             background: #adadad;
             color: #fff;
             text-decoration:none;
+        }
+        textarea {
+            max-width: 100%;
+            width: 100%;
+            height: 70px;
+            box-sizing: border-box;
+        }
+        @media (min-width: 600px) {
+            textarea {
+                width: 480px;
+            }
         }
     </style>
 </head>
@@ -214,7 +223,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             <label for="name">昵称:</label>
             <input type="text" id="name" name="name" required style="width: 120px; height: 20px;">
             <label for="content">内容:</label>
-            <textarea id="content" name="content" required style="width: 480px; height: 70px;"></textarea>
+            <textarea id="content" name="content" required></textarea>
             <input type="submit" value="提交" style="margin-top: 20px; margin-bottom: 50px; width: 100px; height: 35px;">
         </form>
     </div>
