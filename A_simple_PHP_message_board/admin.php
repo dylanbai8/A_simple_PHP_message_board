@@ -58,6 +58,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+if (isset($_GET['delete'])) {
+    $id = (int)$_GET['delete'];
+    $db = getDb();
+    $stmt = $db->prepare("DELETE FROM comments WHERE id = :id");
+    $stmt->execute([':id' => $id]);
+    header('Location: admin.php?page='.$page);
+    exit;
+}
+
 // 计算偏移量
 $offset = ($page - 1) * $perPage;
 
@@ -186,11 +195,13 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
     </header>
     <div class="container main">
         <?php if (!$isLoggedIn): ?>
+            <div style="display: flex; justify-content: center;">
             <form method="POST" action="">
-                <label for="password">管理员密码:</label>
-                <input type="password" id="password" name="password" required>
-                <input type="submit" value="登录">
+                <label style="text-align: center;" for="password">管理员登录</label>
+                <input style="text-align: center; width: 160px;" type="password" id="password" name="password" required>
+                <input style="margin-top: 10px; margin-bottom: 15px; width: 172px;" type="submit" value="登录">
             </form>
+            </div>
         <?php else: ?>
             <h3>公告管理</h3>
             <hr style="width: 100%;">

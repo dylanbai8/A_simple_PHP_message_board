@@ -158,17 +158,17 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             </div>
         <?php endforeach; ?>
 
-        <h3 style="display: inline;">留言精选</h3>
+        <h3 style="display: inline;">留言精选</h3> [<?php echo $perPage.'条/'.$totalComments.'条'; ?>]
         <span style="float:right;">[第<?php echo $page; ?>页] <a class="btn btn-delete" onclick="location.reload()">刷新</a></span>
         <hr style="width: 100%;">
         <ul>
             <?php foreach ($comments as $comment): ?>
                 <li class="comment">
-                    <strong>[访客]: <?php echo htmlspecialchars($comment['name']); ?></strong>
                     <em style="color: #969696;"><?php echo date("Y-m-d H:i:s", strtotime($comment['created_at']." +8 hours")); ?></em>
                     <?php if ($comment['is_pinned']): ?>
                         <span class="pinned-label">[置顶]</span>
                     <?php endif; ?>
+                    <br><strong>[昵称]: <?php echo htmlspecialchars($comment['name']); ?></strong>
                     <br>[留言]: <?php echo htmlspecialchars($comment['content']); ?>
                     <?php if (!empty($comment['reply'])): ?>
                         <br>[站长回复]: <?php echo htmlspecialchars($comment['reply']); ?>
