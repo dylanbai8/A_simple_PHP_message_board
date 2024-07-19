@@ -222,10 +222,27 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
         <form method="POST" action="">
             <label for="name">昵称:</label>
             <input type="text" id="name" name="name" required style="width: 120px; height: 20px;">
-            <label for="content">内容:</label>
-            <textarea id="content" name="content" required></textarea>
+            <label for="content">内容: <span id="char-count">[0/300]</span></label>
+            <textarea id="content" name="content" required maxlength="300"></textarea>
             <input type="submit" value="提交" style="margin-top: 20px; margin-bottom: 50px; width: 100px; height: 35px;">
         </form>
     </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var textarea = document.getElementById('content');
+        var charCount = document.getElementById('char-count');
+        var maxLength = textarea.getAttribute('maxlength');
+
+        textarea.addEventListener('input', function () {
+            var currentLength = textarea.value.length;
+            charCount.textContent = `[${currentLength}/${maxLength}]`;
+            if (currentLength >= maxLength) {
+                alert('您输入的字数已超限!');
+            }
+        });
+    });
+</script>
+
 </body>
 </html>

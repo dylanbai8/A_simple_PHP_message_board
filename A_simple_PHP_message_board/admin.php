@@ -281,6 +281,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             </div>
 
         <?php endif; ?>
+        <div style="margin-bottom: 15px;"></div>
     </div>
 </body>
 </html>
