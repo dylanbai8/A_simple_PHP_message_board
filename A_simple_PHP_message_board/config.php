@@ -3,20 +3,22 @@
 // 首页标题栏内容
 $myTitle = "留言板-建议和反馈";
 // 设置管理员密码
-$adminPassword = 'admin123';
+$adminPassword = "admin123";
 
 // 秒 重复留言间隔时间
-$breakTime = '60*5';
+$breakTime = 60*5;
 // 每页显示的留言数量
 $perPage = 5;
 
-// 数据库名称
-$sqlName = "";
+// 数据库文件名混淆参数
+$sqlName = "qwer1234";
+$sqlName = md5("sqLite_".$sqlName);
 
 
 
 function getDb() {
-    $db = new PDO('sqlite:messages.db');
+    global $sqlName;
+    $db = new PDO("sqlite:sqLite_$sqlName.db");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $db->exec("CREATE TABLE IF NOT EXISTS comments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

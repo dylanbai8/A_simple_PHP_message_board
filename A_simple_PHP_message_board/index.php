@@ -151,6 +151,20 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
     <div class="container main">
         <?php if ($warning): ?>
             <p class="warning"><?php echo $warning; ?></p>
+
+            <p class="success">将于 <span id="countdown">8</span> 秒后刷新。</p>
+            <script>
+                var countdownElement = document.getElementById("countdown");
+                var countdown = 8;
+                var interval = setInterval(function() {
+                    countdown--;
+                    countdownElement.textContent = countdown;
+                    if (countdown <= 0) {
+                        clearInterval(interval);
+                        window.location.href = "index.php";
+                    }
+                }, 1000);
+            </script>
         <?php elseif ($success): ?>
             <p class="success">提交成功，请等待审核。</p>
 
