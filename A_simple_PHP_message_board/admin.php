@@ -201,8 +201,8 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
             <ul>
                 <?php foreach ($announcements as $announcement): ?>
                     <li>
-                        <?php echo htmlspecialchars($announcement['content']); ?>
-                        <em style="color: #969696;">(<?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?>)</em>
+                        <?php echo nl2br(htmlspecialchars($announcement['content'])); ?>
+                        <br><em style="color: #969696;"><?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?></em>
                         <form method="POST" action="" style="display:inline;">
                             <input type="hidden" name="id" value="<?php echo $announcement['id']; ?>">
                             <input type="submit" name="delete_announcement" value="删除" class="btn btn-delete-announcement">

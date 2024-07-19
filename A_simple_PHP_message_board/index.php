@@ -132,7 +132,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
         textarea {
             max-width: 100%;
             width: 100%;
-            height: 70px;
+            height: 150px;
             box-sizing: border-box;
         }
         @media (min-width: 600px) {
@@ -187,8 +187,8 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
         <hr style="width: 100%;">
         <?php foreach ($announcements as $announcement): ?>
             <div class="announcement">
-                <?php echo htmlspecialchars($announcement['content']); ?>
-                <em style="color: #969696;">(<?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?>)</em>
+                <?php echo nl2br(htmlspecialchars($announcement['content'])); ?>
+                <br><em style="color: #969696;"><?php echo date("Y-m-d H:i:s", strtotime($announcement['created_at']." +8 hours")); ?></em>
             </div>
         <?php endforeach; ?>
 
@@ -202,8 +202,8 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
                     <?php if ($comment['is_pinned']): ?>
                         <span class="pinned-label">[置顶]</span>
                     <?php endif; ?>
-                    <br><strong>[昵称]: <?php echo htmlspecialchars($comment['name']); ?></strong>
-                    <br>[留言]: <?php echo htmlspecialchars($comment['content']); ?>
+                    <br><strong>[&nbsp;<?php echo htmlspecialchars($comment['name']); ?>&nbsp;]&nbsp;&nbsp;的留言:</strong>
+                    <br><?php echo nl2br(htmlspecialchars($comment['content'])); ?>
                     <?php if (!empty($comment['reply'])): ?>
                         <br>[站长回复]: <?php echo htmlspecialchars($comment['reply']); ?>
                     <?php endif; ?>
