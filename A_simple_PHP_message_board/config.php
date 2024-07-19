@@ -1,7 +1,19 @@
 <?php
-$adminPassword = 'admin123'; // 设置管理员密码
-$breakTime = '60'; // 秒 重复留言间隔时间
-$perPage = 3; // 每页显示的留言数量
+
+// 首页标题栏内容
+$myTitle = "留言板-建议和反馈";
+// 设置管理员密码
+$adminPassword = 'admin123';
+
+// 秒 重复留言间隔时间
+$breakTime = '60*5';
+// 每页显示的留言数量
+$perPage = 5;
+
+// 数据库名称
+$sqlName = "";
+
+
 
 function getDb() {
     $db = new PDO('sqlite:messages.db');

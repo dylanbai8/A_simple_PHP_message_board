@@ -45,7 +45,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>留言板-建议和反馈</title>
+    <title><?php echo $myTitle; ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -145,7 +145,7 @@ $announcements = getDb()->query("SELECT * FROM announcements ORDER BY created_at
 <body>
     <header>
         <div class="container">
-            <h3><a href="./index.php" style="text-decoration: none; color: #fff;">留言板 --建议和反馈</a></h3>
+            <h3><a href="./index.php" style="text-decoration: none; color: #fff;"><?php echo $myTitle; ?></a></h3>
         </div>
     </header>
     <div class="container main">
